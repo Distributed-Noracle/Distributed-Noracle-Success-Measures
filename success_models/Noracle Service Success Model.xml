@@ -1,0 +1,38 @@
+<SuccessModel name="Noracle Service Success Model" service="i5.las2peer.services.noracleService.NoracleService@0.6.0">
+  <dimension name="System Quality">
+    <factor name="No Factors or Measures yet">
+    </factor>
+  </dimension>
+
+  <dimension name="Information Quality">
+    <factor name="No Factors or Measures yet">
+    </factor>
+  </dimension>
+
+  <dimension name="Use">
+    <factor name="No Factors or Measures yet">
+      <measure name="Number of Questions"/>
+      <measure name="Number of Spaces"/>
+      <measure name="Average Questions per Space"/>
+      <measure name="Average Longest Thread per Space"/>
+      <measure name="Average Thread Length"/>
+      <measure name="Question Votes"/>
+      <measure name="Created Questions Over Time"/>
+    </factor>
+  </dimension>
+
+  <dimension name="User Satisfaction">
+    <factor name="No Factors or Measures yet">
+    </factor>
+  </dimension>
+
+  <dimension name="Individual Impact">
+    <factor name="No Factors or Measures yet">
+    </factor>
+  </dimension>
+
+  <dimension name="Community Impact">
+    <factor name="No Factors or Measures yet">
+    </factor>
+  </dimension>
+</SuccessModel>

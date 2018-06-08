@@ -1,0 +1,189 @@
+<Catalog>
+  
+  <measure name="Successful Agent Uploads Ratio">
+    <query name="AgentUploadStarted">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'AGENT_UPLOAD_STARTED' AND SOURCE_NODE = '$NODE$';
+    </query>
+    <query name="AgentUploadSuccess">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'AGENT_UPLOAD_SUCCESS' AND SOURCE_NODE = '$NODE$';
+    </query>
+    <visualization type="KPI">
+      <operand name="AgentUploadSuccess" index="0"/>
+      <operator name="/" index="1"/>
+      <operand name="AgentUploadStarted" index="2"/>
+    </visualization>
+  </measure>
+  
+  <measure name="Successful Remote Method Invocation Ratio">
+    <query name="MethodInvocations">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'RMI_SENT' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <query name="SuccessfulMethodInvocations">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'RMI_SUCCESSFUL' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="KPI">
+      <operand name="SuccessfulMethodInvocations" index="0"/>
+      <operator name="/" index="1"/>
+      <operand name="MethodInvocations" index="2"/>
+    </visualization>
+  </measure>
+  
+  <measure name="Number of Method Invocations">
+    <query name="AgentUploadSuccess">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'RMI_SENT' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="Value"/>
+  </measure>
+  
+  <measure name="Number of Agent Uploads">
+    <query name="AgentUploadSuccess">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'AGENT_UPLOAD_SUCCESS' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="Value"/>
+  </measure>
+  
+  <measure name="Number of added or changed Artifacts">
+    <query name="AddedArtifacts">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'ARTIFACT_ADDED' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="Value"/>
+  </measure>
+  
+  <measure name="Number of Service Registrations">
+    <query name="RegisteredServices">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'AGENT_REGISTERED' AND JSON_EXTRACT(REMARKS,"$.msg")='ServiceAgent' AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="Value"/>
+  </measure>
+  
+  <measure name="Number of User Registrations">
+    <query name="RegisteredUsers">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'AGENT_REGISTERED' AND (JSON_EXTRACT(REMARKS,"$.msg")='UserAgent' OR JSON_EXTRACT(REMARKS,"$.msg")='Mediator') AND SOURCE_NODE = '$NODE$'
+    </query>
+    <visualization type="Value"/>
+  </measure>
+  
+  <measure name="Average Time Users Logged-In in Seconds">
+    <query name="AverageUserOnlineTime">
+      SELECT AVG(TIMESTAMPDIFF (SECOND, CAST(r.UNREGISTRATION_DATE AS CHAR), CAST(r.REGISTRATION_DATE AS CHAR)))
+      FROM REGISTERED_AT r, AGENT a
+      WHERE r.AGENT_ID = a.AGENT_ID AND (a.TYPE='MEDIATOR' OR a.TYPE='USER')
+      AND r.RUNNING_AT = '$NODE$'
+    </query>
+    <visualization type="KPI">
+      <operand name="AverageUserOnlineTime" index="0"/>
+    </visualization>
+  </measure>
+  
+  <measure name="Number of User Registrations over Time">
+    <query name="RegisteredUsers">
+      SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(EVENT) AS "Registrations" FROM MESSAGE
+      WHERE EVENT = 'AGENT_REGISTERED' AND (JSON_EXTRACT(REMARKS,"$.msg")='UserAgent' OR JSON_EXTRACT(REMARKS,"$.msg")='Mediator')
+      AND SOURCE_NODE = '$NODE$'
+      GROUP BY Time
+    </query>
+    <visualization type="Chart">
+      <chartType>LineChart</chartType>
+      <nodeId>RegisteredUsersNodeChart</nodeId>
+      <title>Registered Users</title>
+      <height>300</height>
+      <width>100%</width>
+    </visualization>
+  </measure>
+  
+  <measure name="Number of send LAS2peer Messages over Time">
+    <query name="SendedMessages">
+      SELECT CAST(FROM_UNIXTIME(TIME_STAMP/1000, '%Y %D %M %H:%i') AS CHAR) AS Time, COUNT(EVENT) AS 'Send Messages' FROM MESSAGE
+      WHERE EVENT = 'MESSAGE_SENDING'
+      AND SOURCE_NODE = '$NODE$'
+      GROUP BY Time;
+    </query>
+    <visualization type="Chart">
+      <chartType>PieChart</chartType>
+      <nodeId>SendMessagesNodeChart</nodeId>
+      <title>Send Messages</title>
+      <height>300</height>
+      <width>100%</width>
+    </visualization>
+  </measure>
+
+  <measure name="Number of Questions">
+    <query name="countOfQuestions">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_5' AND $SOURCE_AGENT$
+    </query>
+    <visualization type="Value"/>
+  </measure>
+
+  <measure name="Number of Spaces">
+    <query name="countOfSpaces">
+      SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_9' AND $SOURCE_AGENT$
+    </query>
+    <visualization type="Value"/>
+  </measure>
+
+  <measure name="Average Questions per Space">
+    <query name="countOfSpaces">
+      SELECT (SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_5' AND $SOURCE_AGENT$)/(SELECT COUNT(*) FROM MESSAGE WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_9' AND $SOURCE_AGENT$)
+    </query>
+    <visualization type="Value"/>
+  </measure>
+
+  <measure name="Average Longest Thread per Space">
+    <query name="averageLongestThread">
+      SELECT AVG(longestThreads.max) FROM 
+      (
+      SELECT MAX(json_extract(REMARKS, '$.depth')) as max FROM MESSAGE 
+      WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_10' AND $SOURCE_AGENT$
+      GROUP BY json_extract(REMARKS, '$.spaceId')
+      ) as longestThreads
+    </query>
+    <visualization type="Value"/>
+  </measure>
+
+  <measure name="Average Thread Length">
+    <query name="averageThreadLength">
+      SELECT AVG(json_extract(REMARKS, '$.depth')) as avg_depth
+      FROM MESSAGE
+      WHERE EVENT='SERVICE_CUSTOM_MESSAGE_10' AND $SOURCE_AGENT$ AND json_extract(REMARKS, '$.qid') NOT IN
+      (
+      SELECT json_extract(REMARKS, '$.firstQuestionId') as first FROM MESSAGE 
+      WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_3' AND $SOURCE_AGENT$ AND json_extract(REMARKS, '$.name')='FollowUp'
+      )
+    </query>
+    <visualization type="Value"/>
+  </measure>
+
+  <measure name="Question Votes">
+    <query name="questionVotes">
+      SELECT (CASE json_extract(REMARKS, '$.value')
+      WHEN 1 THEN 'Positive'
+      WHEN -1 THEN 'Negative'
+      WHEN 0 THEN 'Neutral'
+      END) as Vote, COUNT(*) as Count FROM MESSAGE WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_7'  AND $SOURCE_AGENT$
+      GROUP BY Vote ORDER BY Vote DESC
+    </query>
+    <visualization type="Chart">
+      <chartType>PieChart</chartType>
+      <nodeId>VotesChart</nodeId>
+      <title>Question Votes</title>
+      <height>300</height>
+      <width>100%</width>
+    </visualization>
+  </measure>
+  
+  <measure name="Created Questions Over Time">
+    <query name="questionsOverTime">
+      SELECT DATE_FORMAT(TIME_STAMP, '%M %Y') as Time, COUNT(*) as Questions FROM MESSAGE 
+      WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_5' AND $SOURCE_AGENT$ 
+      GROUP BY Time ORDER BY STR_TO_DATE(Time, '%M %Y') DESC LIMIT 12
+    </query>
+    <visualization type="Chart">
+      <chartType>LineChart</chartType>
+      <nodeId>QuestionsOverTimeChart</nodeId>
+      <title>Created Questions</title>
+      <height>300</height>
+      <width>100%</width>
+    </visualization>
+  </measure>
+  
+</Catalog>
