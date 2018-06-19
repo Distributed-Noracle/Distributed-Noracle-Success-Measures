@@ -1,4 +1,4 @@
-<SuccessModel name="Noracle Service Success Model" service="i5.las2peer.services.noracleService.NoracleService@0.6.0">
+<SuccessModel name="Noracle Service Success Model" service="i5.las2peer.services.noracleService.NoracleService@0.7.0">
   <dimension name="System Quality">
     <factor name="No Factors or Measures yet">
     </factor>
