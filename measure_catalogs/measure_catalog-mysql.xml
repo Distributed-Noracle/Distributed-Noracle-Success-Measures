@@ -173,9 +173,9 @@
   
   <measure name="Created Questions Over Time">
     <query name="questionsOverTime">
-      SELECT DATE_FORMAT(TIME_STAMP, '%M %Y') as Time, COUNT(*) as Questions FROM MESSAGE 
+      SELECT DATE_FORMAT(TIME_STAMP, '%M %Y %e') as Time, COUNT(*) as Questions FROM MESSAGE 
       WHERE EVENT = 'SERVICE_CUSTOM_MESSAGE_5' AND $SOURCE_AGENT$ 
-      GROUP BY Time ORDER BY STR_TO_DATE(Time, '%M %Y') DESC LIMIT 12
+      GROUP BY Time ORDER BY STR_TO_DATE(Time, '%M %Y %e') DESC LIMIT 60
     </query>
     <visualization type="Chart">
       <chartType>LineChart</chartType>
